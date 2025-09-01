@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:aa/Camera/camera_page.dart';
 import 'package:aa/Page/effect_page.dart';
 import 'package:aa/Page/login_page.dart';
 import 'package:aa/Page/map_page.dart';
 import 'package:aa/Page/mypage_page.dart';
 import 'package:aa/Widget/showbanner_widget.dart';
+import 'package:camera/camera.dart';
 
 import 'package:flutter/material.dart';
 
@@ -172,7 +174,8 @@ class _MainPageState extends State<MainPage> {
                 mainAxisSpacing: screenHeight * 0.04,
                 children: menuItems.map((item) {
                   return GestureDetector(
-                    onTap: () {
+                    onTap: () async {
+                      // 여기서 async 붙임
                       final label = item['label'];
 
                       if (label == '흡연장 찾기') {
@@ -181,10 +184,22 @@ class _MainPageState extends State<MainPage> {
                           MaterialPageRoute(builder: (_) => const MapPage()),
                         );
                       } else if (label == '신고하기') {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const LoginPage()),
-                        );
+                        try {
+                          // 1. 카메라 리스트 가져오기
+                          final cameras = await availableCameras();
+                          final firstCamera = cameras.first;
+
+                          // 2. 카메라 페이지로 이동
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  CameraPage(camera: firstCamera),
+                            ),
+                          );
+                        } catch (e) {
+                          print("Camera error: $e");
+                        }
                       } else if (label == '마이 페이지') {
                         Navigator.push(
                           context,
@@ -197,6 +212,7 @@ class _MainPageState extends State<MainPage> {
                         );
                       }
                     },
+
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
