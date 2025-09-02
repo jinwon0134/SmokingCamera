@@ -57,6 +57,7 @@ class _MapPageState extends State<MapPage> {
   Future<void> _getCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('위치 서비스를 켜주세요.')));
@@ -67,6 +68,7 @@ class _MapPageState extends State<MapPage> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
+        if (!mounted) return;
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('위치 권한이 필요합니다.')));
@@ -75,6 +77,7 @@ class _MapPageState extends State<MapPage> {
     }
 
     if (permission == LocationPermission.deniedForever) {
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('앱 설정에서 위치 권한을 허용해주세요.')));
@@ -84,6 +87,8 @@ class _MapPageState extends State<MapPage> {
     Position position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
+
+    if (!mounted) return; // 위젯이 아직 화면에 있는지 체크
     setState(() {
       _currentLocation = LatLng(position.latitude, position.longitude);
       _markers.add(
@@ -105,9 +110,9 @@ class _MapPageState extends State<MapPage> {
       List<Location> locations = await locationFromAddress(address);
       if (locations.isNotEmpty) {
         final loc = locations.first;
+        if (!mounted) return; // 위젯이 화면에 없으면 setState 호출 금지
         setState(() {
           _searchedLocation = LatLng(loc.latitude, loc.longitude);
-
           _markers.removeWhere((m) => m.markerId.value == 'searched');
           _markers.add(
             Marker(
@@ -126,6 +131,7 @@ class _MapPageState extends State<MapPage> {
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('위치를 찾을 수 없습니다.')));
