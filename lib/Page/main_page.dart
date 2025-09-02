@@ -52,6 +52,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
@@ -74,6 +75,8 @@ class _MainPageState extends State<MainPage> {
           ),
         ],
       ),
+
+      // ✅ 스크롤 가능한 본문
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: screenHeight * 0.03),
@@ -167,16 +170,15 @@ class _MainPageState extends State<MainPage> {
 
               SizedBox(height: screenHeight * 0.075),
 
-              // 그리드 메뉴
+              // ✅ 메뉴 그리드
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
                 child: GridView.count(
                   crossAxisCount: 2,
                   crossAxisSpacing: screenWidth * 0.08,
                   mainAxisSpacing: screenHeight * 0.04,
-                  shrinkWrap: true, // 중요: GridView가 Column 안에서 스크롤 가능하게
-                  physics:
-                      const NeverScrollableScrollPhysics(), // GridView 자체 스크롤 제거
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   children: menuItems.map((item) {
                     return GestureDetector(
                       onTap: () async {
@@ -260,20 +262,23 @@ class _MainPageState extends State<MainPage> {
                 ),
               ),
 
-              // 하단 배너
-              if (_showBanner)
-                ShowBannerWidget(
-                  imagePath: adImages[currentAdIndex],
-                  onClose: () {
-                    setState(() {
-                      _showBanner = false;
-                    });
-                  },
-                ),
+              SizedBox(height: screenHeight * 0.1), // ✅ 배너 위 공간 확보
             ],
           ),
         ),
       ),
+
+      // ✅ 항상 하단 고정되는 배너
+      bottomNavigationBar: _showBanner
+          ? ShowBannerWidget(
+              imagePath: adImages[currentAdIndex],
+              onClose: () {
+                setState(() {
+                  _showBanner = false;
+                });
+              },
+            )
+          : null,
     );
   }
 }
