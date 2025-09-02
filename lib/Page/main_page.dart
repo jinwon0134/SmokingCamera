@@ -5,6 +5,7 @@ import 'package:aa/Page/effect_page.dart';
 import 'package:aa/Page/login_page.dart';
 import 'package:aa/Page/map_page.dart';
 import 'package:aa/Page/mypage_page.dart';
+import 'package:aa/Widget/gallery_widget.dart';
 import 'package:aa/Widget/showbanner_widget.dart';
 import 'package:camera/camera.dart';
 
