@@ -8,8 +8,8 @@ class DisplayPicturePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Picture Preview')),
-      body: Image.file(File(imagePath)),
+      appBar: AppBar(title: const Text('미리보기')),
+      body: Center(child: Image.file(File(imagePath))),
     );
   }
 }

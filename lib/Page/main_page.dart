@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:aa/Camera/camera_page.dart';
+import 'package:aa/Camera/gallery_grid_page.dart';
 import 'package:aa/Page/effect_page.dart';
 import 'package:aa/Page/login_page.dart';
 import 'package:aa/Page/map_page.dart';
@@ -191,25 +192,17 @@ class _MainPageState extends State<MainPage> {
                             MaterialPageRoute(builder: (_) => const MapPage()),
                           );
                         } else if (label == '신고하기') {
-                          try {
-                            final cameras = await availableCameras();
-                            final firstCamera = cameras.first;
-
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    CameraPage(camera: firstCamera),
-                              ),
-                            );
-                          } catch (e) {
-                            print("Camera error: $e");
-                          }
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const GalleryGridPage(),
+                            ),
+                          );
                         } else if (label == '마이 페이지') {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const MyPagePage(),
+                              builder: (_) => const GalleryPage(),
                             ),
                           );
                         } else if (label == '금연 효과') {
