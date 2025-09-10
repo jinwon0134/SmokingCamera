@@ -1,15 +1,10 @@
 import 'dart:async';
-
-import 'package:aa/Camera/camera_page.dart';
 import 'package:aa/Camera/gallery_grid_page.dart';
 import 'package:aa/Page/effect_page.dart';
 import 'package:aa/Page/login_page.dart';
 import 'package:aa/Page/map_page.dart';
 import 'package:aa/Page/mypage_page.dart';
-import 'package:aa/Widget/gallery_widget.dart';
 import 'package:aa/Widget/showbanner_widget.dart';
-import 'package:camera/camera.dart';
-
 import 'package:flutter/material.dart';
 
 int currentAdIndex = 0;
@@ -199,17 +194,31 @@ class _MainPageState extends State<MainPage> {
                             ),
                           );
                         } else if (label == '마이 페이지') {
-                          Navigator.push(
+                          // MyPage 열기 → 금연 정보 입력
+                          final info = await Navigator.push<UserInfo>(
                             context,
-                            MaterialPageRoute(
-                              builder: (_) => const GalleryPage(),
-                            ),
+                            MaterialPageRoute(builder: (_) => const MyPage()),
                           );
+
+                          // info가 null이 아니면 EffectPage로 이동
+                          if (info != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => EffectPage(
+                                  quitStartDate: info.quitStartDate,
+                                ),
+                              ),
+                            );
+                          }
                         } else if (label == '금연 효과') {
+                          // 테스트용: 그냥 오늘 날짜로 이동
+                          DateTime quitStartDate = DateTime.now();
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const Effectpage(),
+                              builder: (_) =>
+                                  EffectPage(quitStartDate: quitStartDate),
                             ),
                           );
                         }

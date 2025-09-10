@@ -1,190 +1,158 @@
-import 'package:aa/Page/main_page.dart';
-import 'package:aa/Widget/calendar_bottomsheet.dart';
 import 'package:flutter/material.dart';
 
-class MyPagePage extends StatefulWidget {
-  const MyPagePage({super.key});
+class UserInfo {
+  final DateTime smokingStartDate;
+  final DateTime quitStartDate;
+  final int avgCigsPerDay;
 
-  @override
-  State<MyPagePage> createState() => _MyPagePageState();
+  UserInfo({
+    required this.smokingStartDate,
+    required this.quitStartDate,
+    required this.avgCigsPerDay,
+  });
 }
 
-class _MyPagePageState extends State<MyPagePage> {
-  final TextEditingController _smokingStartController = TextEditingController();
-  final TextEditingController _quittingStartController =
-      TextEditingController();
-  final TextEditingController _smokeAmountController = TextEditingController();
+class MyPage extends StatefulWidget {
+  const MyPage({super.key});
+
+  @override
+  State<MyPage> createState() => _MyPageState();
+}
+
+class _MyPageState extends State<MyPage> {
+  DateTime? _smokingStartDate;
+  DateTime? _quitStartDate;
+  final TextEditingController _avgController = TextEditingController();
+
+  Future<void> _pickDate(
+    BuildContext context,
+    DateTime? initial,
+    ValueChanged<DateTime> onPicked,
+  ) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial ?? DateTime.now(),
+      firstDate: DateTime(1950),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 10)),
+    );
+    if (picked != null) onPicked(picked);
+  }
+
+  String _fmtDate(DateTime? d) {
+    if (d == null) return 'xxxx년 xx월 xx일';
+    return '${d.year}년 ${d.month}월 ${d.day}일';
+  }
 
   @override
   void dispose() {
-    _smokingStartController.dispose();
-    _quittingStartController.dispose();
-    _smokeAmountController.dispose();
+    _avgController.dispose();
     super.dispose();
+  }
+
+  void _saveAndReturn() {
+    final avgText = _avgController.text.trim();
+    final avg = int.tryParse(avgText);
+    if (_smokingStartDate == null || _quitStartDate == null || avg == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('모든 항목을 정확히 입력해 주세요')));
+      return;
+    }
+    // 간단 검사: 금연 시작일은 흡연 시작일 이후 또는 같은 날이어야 함
+    if (_quitStartDate!.isBefore(_smokingStartDate!)) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('금연 시작일이 흡연 시작일보다 빠릅니다')));
+      return;
+    }
+
+    final info = UserInfo(
+      smokingStartDate: _smokingStartDate!,
+      quitStartDate: _quitStartDate!,
+      avgCigsPerDay: avg,
+    );
+    Navigator.pop(context, info);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('마이페이지'),
+        title: const Text('마이페이지'),
         centerTitle: true,
-        shape: Border(bottom: BorderSide(color: Colors.black)),
+        shape: const Border(bottom: BorderSide(color: Colors.black)),
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
       ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Column(
-            children: [
-              const SizedBox(height: 40),
-              Container(
-                padding: const EdgeInsets.all(20),
-                width: 330,
-                child: Column(
-                  children: [
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Text(
-                        "흡연 시작일",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Color(0xFFBFBFBF)),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: TextField(
-                        controller: _smokingStartController,
-                        readOnly: true,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: "ex) xxxx년 xx월 xx일",
-                        ),
-                        onTap: () {
-                          CalendarBottomSheet.show(context, (selectedDate) {
-                            setState(() {
-                              _smokingStartController.text =
-                                  "${selectedDate.year}년 ${selectedDate.month}월 ${selectedDate.day}일";
-                            });
-                          });
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Text(
-                        "금연 시작일",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Color(0xFFBFBFBF)),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: TextField(
-                        controller: _quittingStartController,
-                        readOnly: true,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: "ex) xxxx년 xx월 xx일",
-                        ),
-                        onTap: () {
-                          CalendarBottomSheet.show(context, (selectedDate) {
-                            setState(() {
-                              _quittingStartController.text =
-                                  "${selectedDate.year}년 ${selectedDate.month}월 ${selectedDate.day}일";
-                            });
-                          });
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Text(
-                        "평균 흡연량",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Color(0xFFBFBFBF)),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: TextField(
-                        controller: _smokeAmountController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: "ex) xx 개비",
-                        ),
-                        onChanged: (value) {
-                          final number = value.replaceAll(
-                            RegExp(r'[^0-9]'),
-                            '',
-                          );
-                          if (number.isNotEmpty) {
-                            _smokeAmountController.value = TextEditingValue(
-                              text: "$number개비",
-                              selection: TextSelection.collapsed(
-                                offset: number.length,
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 100),
-                    Container(
-                      width: 400,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          print("흡연 시작일: ${_smokingStartController.text}");
-                          print("금연 시작일: ${_quittingStartController.text}");
-                          print("평균 흡연량: ${_smokeAmountController.text}");
-
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => MainPage()),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: Text('수정하기'),
-                      ),
-                    ),
-                  ],
-                ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text('금연정보입력', style: TextStyle(color: Colors.grey[600])),
+            ),
+            const SizedBox(height: 12),
+            // 흡연 시작일
+            InkWell(
+              onTap: () => _pickDate(
+                context,
+                _smokingStartDate,
+                (d) => setState(() => _smokingStartDate = d),
               ),
-            ],
-          ),
+              child: InputDecorator(
+                decoration: InputDecoration(
+                  labelText: '흡연 시작일',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(_fmtDate(_smokingStartDate)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // 금연 시작일
+            InkWell(
+              onTap: () => _pickDate(
+                context,
+                _quitStartDate,
+                (d) => setState(() => _quitStartDate = d),
+              ),
+              child: InputDecorator(
+                decoration: InputDecoration(
+                  labelText: '금연 시작일',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(_fmtDate(_quitStartDate)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // 평균 흡연량
+            TextFormField(
+              controller: _avgController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: '평균 흡연량 (개비/일)',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                hintText: '예) 20',
+              ),
+            ),
+            const SizedBox(height: 18),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _saveAndReturn,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: const Text('수정하기', style: TextStyle(fontSize: 16)),
+              ),
+            ),
+          ],
         ),
       ),
     );

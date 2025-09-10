@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'display_picture_page.dart';
+import 'package:path_provider/path_provider.dart';
+import 'gallery_grid_page.dart';
 
 class CameraPage extends StatefulWidget {
   final CameraDescription camera;
@@ -33,14 +34,18 @@ class _CameraPageState extends State<CameraPage> {
       await _initializeControllerFuture;
       final image = await _controller.takePicture();
 
-      if (!context.mounted) return;
+      // 앱 내부 저장소 경로 가져오기
+      final directory = await getApplicationDocumentsDirectory();
+      final savedPath =
+          '${directory.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DisplayPicturePage(imagePath: image.path),
-        ),
-      );
+      // 사진을 복사 (앱 내부 저장소에 저장됨)
+      final savedImage = await File(image.path).copy(savedPath);
+
+      if (!mounted) return;
+
+      // GalleryGridPage로 되돌아가면서 경로 전달
+      Navigator.pop(context, savedImage.path);
     } catch (e) {
       print("Camera error: $e");
     }
