@@ -193,29 +193,6 @@ class _MapPageState extends State<MapPage> {
               myLocationButtonEnabled: true,
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-                onPressed: () {
-                  if (_searchedLocation != null) {
-                    print("저장된 위치: $_searchedLocation");
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("먼저 위치를 검색해주세요.")),
-                    );
-                  }
-                },
-                child: const Text(
-                  "위치 저장하기",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
