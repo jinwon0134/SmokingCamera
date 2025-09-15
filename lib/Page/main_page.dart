@@ -4,9 +4,11 @@ import 'package:aa/Page/effect_page.dart';
 import 'package:aa/Page/login_page.dart';
 import 'package:aa/Page/map_page.dart';
 import 'package:aa/Page/mypage_page.dart';
+import 'package:aa/Widget/case_example_slider.dart';
 import 'package:aa/Widget/showbanner_widget.dart';
 import 'package:flutter/material.dart';
 
+// 광고 관련
 int currentAdIndex = 0;
 final List<String> adImages = [
   'assets/images/smoke1.png',
@@ -23,6 +25,10 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+  UserInfo? _userInfo;
+  late Timer _profileTimer;
+  late Timer _adTimer;
+
   final List<Map<String, dynamic>> menuItems = const [
     {'image': 'assets/images/siren.png', 'label': '신고하기'},
     {'image': 'assets/images/map.png', 'label': '흡연장 찾기'},
@@ -30,36 +36,70 @@ class _MainPageState extends State<MainPage> {
     {'image': 'assets/images/person.png', 'label': '마이 페이지'},
   ];
 
-  late Timer _adTimer;
-
   @override
   void initState() {
     super.initState();
+
+    // 광고 배너 5초마다 변경
     _adTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       setState(() {
         currentAdIndex = (currentAdIndex + 1) % adImages.length;
       });
+    });
+
+    // 카드 프로필 실시간 갱신
+    _profileTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_userInfo != null) setState(() {});
     });
   }
 
   @override
   void dispose() {
     _adTimer.cancel();
+    _profileTimer.cancel();
     super.dispose();
   }
 
-  @override
+  // 금연 시간 포맷
+  String _formatDurationSince(DateTime since) {
+    final elapsed = DateTime.now().difference(since);
+    final days = elapsed.inDays;
+    final hours = elapsed.inHours % 24;
+    final minutes = elapsed.inMinutes % 60;
+    final seconds = elapsed.inSeconds % 60;
+    return '${days}일 ${hours}시간 ${minutes}분 ${seconds}초';
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
+    // 절약한 금액 계산 (소수점 첫째 자리)
+    String savedMoneyText = '정보 없음';
+    String quitTimeText = '정보 없음';
+    final pricePerCig = 225;
+
+    if (_userInfo != null) {
+      final elapsedSeconds = DateTime.now()
+          .difference(_userInfo!.quitStartDate)
+          .inSeconds;
+      final perSecondCig = _userInfo!.avgCigsPerDay / 86400; // 1초당 흡연량
+      final perSecondMoney = perSecondCig * pricePerCig; // 1초당 절약 금액
+      final savedMoney = perSecondMoney * elapsedSeconds;
+      savedMoneyText = '${savedMoney.toStringAsFixed(1)}원';
+
+      quitTimeText = _formatDurationSince(_userInfo!.quitStartDate);
+    }
+
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('메인페이지'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text('메인 페이지'),
         centerTitle: true,
         shape: const Border(bottom: BorderSide(color: Colors.black)),
-        backgroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -73,7 +113,6 @@ class _MainPageState extends State<MainPage> {
         ],
       ),
 
-      // ✅ 스크롤 가능한 본문
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: screenHeight * 0.03),
@@ -81,7 +120,7 @@ class _MainPageState extends State<MainPage> {
             children: [
               SizedBox(height: screenHeight * 0.07),
 
-              // 상단 카드
+              // 카드 프로필
               Container(
                 margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                 padding: EdgeInsets.all(screenWidth * 0.04),
@@ -96,22 +135,44 @@ class _MainPageState extends State<MainPage> {
                     1: FlexColumnWidth(1),
                   },
                   children: [
-                    TableRow(
+                    const TableRow(
                       children: [
                         Text(
                           '프로필',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFBFBFBF),
+                          ),
+                        ),
+                        SizedBox(height: 40),
+                      ],
+                    ),
+                    TableRow(
+                      children: [
+                        const Text(
+                          '아이디',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFFBFBFBF),
                           ),
                         ),
-                        SizedBox(height: 30),
+                        Text(
+                          'jinwon0134:db id',
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFBFBFBF),
+                          ),
+                        ),
                       ],
                     ),
+
                     TableRow(
                       children: [
-                        Text(
+                        const Text(
                           '금연시간',
                           style: TextStyle(
                             fontSize: 16,
@@ -120,9 +181,9 @@ class _MainPageState extends State<MainPage> {
                           ),
                         ),
                         Text(
-                          '1일 10시간 31분 15초',
+                          quitTimeText,
                           textAlign: TextAlign.right,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFFBFBFBF),
@@ -143,9 +204,9 @@ class _MainPageState extends State<MainPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            const Text(
-                              '67,500.64원',
-                              style: TextStyle(
+                            Text(
+                              savedMoneyText,
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFFBFBFBF),
@@ -167,7 +228,7 @@ class _MainPageState extends State<MainPage> {
 
               SizedBox(height: screenHeight * 0.075),
 
-              // ✅ 메뉴 그리드
+              // 메뉴 그리드
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
                 child: GridView.count(
@@ -194,31 +255,30 @@ class _MainPageState extends State<MainPage> {
                             ),
                           );
                         } else if (label == '마이 페이지') {
-                          // MyPage 열기 → 금연 정보 입력
                           final info = await Navigator.push<UserInfo>(
                             context,
                             MaterialPageRoute(builder: (_) => const MyPage()),
                           );
-
-                          // info가 null이 아니면 EffectPage로 이동
                           if (info != null) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => EffectPage(
-                                  quitStartDate: info.quitStartDate,
-                                ),
-                              ),
-                            );
+                            setState(() {
+                              _userInfo = info;
+                            });
                           }
                         } else if (label == '금연 효과') {
-                          // 테스트용: 그냥 오늘 날짜로 이동
-                          DateTime quitStartDate = DateTime.now();
+                          if (_userInfo == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('먼저 마이페이지에서 정보를 입력해 주세요'),
+                              ),
+                            );
+                            return;
+                          }
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  EffectPage(quitStartDate: quitStartDate),
+                              builder: (_) => EffectPage(
+                                quitStartDate: _userInfo!.quitStartDate,
+                              ),
                             ),
                           );
                         }
@@ -265,13 +325,47 @@ class _MainPageState extends State<MainPage> {
                 ),
               ),
 
-              SizedBox(height: screenHeight * 0.1), // ✅ 배너 위 공간 확보
+              SizedBox(height: screenHeight * 0.1),
+
+              // 📌 주요 처리 사례 카드
+              // 📌 주요 처리 사례 카드
+              Container(
+                width: 400,
+                height: 300,
+                decoration: const BoxDecoration(color: Color(0xFFEDEDED)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text("주요 처리 사례", style: TextStyle(fontSize: 18)),
+                    ),
+                    SizedBox(
+                      height: 220, // 이미지 높이
+                      child: CaseExampleSlider(
+                        imagePairs: [
+                          [
+                            "assets/images/usethenewpic1.png",
+                            "assets/images/usethenewpic2.png",
+                          ],
+                          [
+                            "assets/images/usethenewpic1.png",
+                            "assets/images/usethenewpic2.png",
+                          ],
+
+                          // 필요하면 더 추가
+                        ],
+                        descriptions: ["융과 4층 계단", "융과 2층 테라스"],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
       ),
 
-      // ✅ 항상 하단 고정되는 배너
       bottomNavigationBar: _showBanner
           ? ShowBannerWidget(
               imagePath: adImages[currentAdIndex],
