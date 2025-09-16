@@ -7,7 +7,7 @@ class CaseExampleSlider extends StatefulWidget {
   const CaseExampleSlider({
     super.key,
     required this.imagePairs,
-    required this.descriptions, // ✅ 추가
+    required this.descriptions,
   });
 
   @override
@@ -17,7 +17,7 @@ class CaseExampleSlider extends StatefulWidget {
 class _CaseExampleSliderState extends State<CaseExampleSlider> {
   late PageController _pageController;
   int _currentPage = 0;
-  final double imageSize = 140;
+  final double imageHeight = 120; // 이미지 높이 조정 가능
 
   @override
   void initState() {
@@ -35,57 +35,49 @@ class _CaseExampleSliderState extends State<CaseExampleSlider> {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        // ✅ 높이를 명확히 지정해줌
         SizedBox(
-          height: imageSize + 30,
+          height: imageHeight + 50, // 이미지 + 설명 공간 확보
           child: PageView.builder(
             controller: _pageController,
             itemCount: widget.imagePairs.length,
             onPageChanged: (index) => setState(() => _currentPage = index),
             itemBuilder: (context, index) {
               final pair = widget.imagePairs[index];
-              return Stack(
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: imageSize,
-                        height: imageSize,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(pair[0], fit: BoxFit.cover),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AspectRatio(
+                          aspectRatio: 4 / 3,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.asset(pair[0], fit: BoxFit.cover),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      SizedBox(
-                        width: imageSize,
-                        height: imageSize,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(pair[1], fit: BoxFit.cover),
+                        const SizedBox(width: 16),
+                        AspectRatio(
+                          aspectRatio: 4 / 3,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.asset(pair[1], fit: BoxFit.cover),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                  Positioned(
-                    left: 8,
-                    bottom: 0,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        widget.descriptions[index], // 페이지별 텍스트
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Text(
+                      widget.descriptions[index],
+                      style: const TextStyle(
+                        color: Color(0xFF8E8E8E),
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),

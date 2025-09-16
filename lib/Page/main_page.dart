@@ -328,20 +328,46 @@ class _MainPageState extends State<MainPage> {
               SizedBox(height: screenHeight * 0.1),
 
               // 📌 주요 처리 사례 카드
-              // 📌 주요 처리 사례 카드
               Container(
-                width: 400,
-                height: 300,
-                decoration: const BoxDecoration(color: Color(0xFFEDEDED)),
+                width: double.infinity,
+                height: MediaQuery.of(context).size.height * 0.3, // 화면 높이의 30%
+                decoration: const BoxDecoration(color: Colors.white),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Text("주요 처리 사례", style: TextStyle(fontSize: 18)),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Row(
+                            children: const [
+                              Icon(
+                                Icons.find_in_page_outlined,
+                                size: 25,
+                                color: Colors.blue,
+                              ),
+                              SizedBox(width: 8), // 아이콘과 텍스트 간 간격
+                              Text("주요처리사례", style: TextStyle(fontSize: 20)),
+                            ],
+                          ),
+
+                          // 오른쪽: 버튼
+                          TextButton(
+                            onPressed: () {
+                              // 버튼 클릭 시 동작
+                            },
+                            child: const Text(
+                              "더보기 +",
+                              style: TextStyle(color: Colors.blue),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    SizedBox(
-                      height: 220, // 이미지 높이
+
+                    Expanded(
                       child: CaseExampleSlider(
                         imagePairs: [
                           [
@@ -352,8 +378,6 @@ class _MainPageState extends State<MainPage> {
                             "assets/images/usethenewpic1.png",
                             "assets/images/usethenewpic2.png",
                           ],
-
-                          // 필요하면 더 추가
                         ],
                         descriptions: ["융과 4층 계단", "융과 2층 테라스"],
                       ),
