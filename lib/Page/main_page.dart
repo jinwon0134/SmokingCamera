@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'package:aa/Camera/gallery_grid_page.dart';
-import 'package:aa/Page/effect_page.dart';
-import 'package:aa/Page/login_page.dart';
-import 'package:aa/Page/map_page.dart';
-import 'package:aa/Page/mypage_page.dart';
-import 'package:aa/Page/setting_page.dart';
+import 'package:aa/Page/Camera/gallery_grid_page.dart';
+import 'package:aa/Page/Function.page/effect_page.dart';
+import 'package:aa/Page/Login.page/login_page.dart';
+import 'package:aa/Page/Function.page/map_page.dart';
+import 'package:aa/Page/Function.page/mypage_page.dart';
+import 'package:aa/Page/Setting.page/setting_page.dart';
 import 'package:aa/Widget/case_example_slider.dart';
 import 'package:aa/Widget/showbanner_widget.dart';
 import 'package:flutter/material.dart';

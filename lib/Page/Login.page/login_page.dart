@@ -1,7 +1,7 @@
-import 'package:aa/Page/find_idpassword_page.dart';
-import 'package:aa/Page/find_password_page.dart';
+import 'package:aa/Page/Login.page/find_idpassword_page.dart';
+import 'package:aa/Page/Login.page/find_password_page.dart';
 import 'package:aa/Page/main_page.dart';
-import 'package:aa/Page/register_page.dart';
+import 'package:aa/Page/Login.page/register_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';

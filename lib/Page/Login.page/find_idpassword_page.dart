@@ -1,5 +1,5 @@
-import 'package:aa/Page/find_id_page.dart';
-import 'package:aa/Page/find_password_page.dart';
+import 'package:aa/Page/Login.page/find_id_page.dart';
+import 'package:aa/Page/Login.page/find_password_page.dart';
 
 import 'package:flutter/material.dart';
 

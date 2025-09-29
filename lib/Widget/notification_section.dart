@@ -1,5 +1,7 @@
 // import 'package:flutter/material.dart';
 // import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+// import 'package:timezone/data/latest_all.dart' as tz;
+// import 'package:timezone/timezone.dart' as tz;
 
 // class NotificationSection extends StatefulWidget {
 //   const NotificationSection({Key? key}) : super(key: key);
@@ -9,12 +11,10 @@
 // }
 
 // class _NotificationSectionState extends State<NotificationSection> {
-//   bool isSmokeEffectOn = true;
 //   bool isMotivationOn = false;
-//   TimeOfDay _motivationTime = const TimeOfDay(hour: 9, minute: 0);
+//   TimeOfDay selectedTime = const TimeOfDay(hour: 9, minute: 0);
 
-//   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-//       FlutterLocalNotificationsPlugin();
+//   final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
 //   @override
 //   void initState() {
@@ -23,43 +23,45 @@
 //   }
 
 //   Future<void> _initNotifications() async {
-//     const AndroidInitializationSettings androidSettings =
-//         AndroidInitializationSettings('@mipmap/ic_launcher');
+//     tz.initializeTimeZones();
 
-//     const InitializationSettings initSettings =
-//         InitializationSettings(android: androidSettings);
+//     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+
+//     const initSettings = InitializationSettings(android: androidSettings);
 
 //     await flutterLocalNotificationsPlugin.initialize(initSettings);
 //   }
 
-//   Future<void> _scheduleDailyAlarm(TimeOfDay time) async {
+//   Future<void> _scheduleDailyNotification() async {
 //     final now = DateTime.now();
-//     DateTime firstSchedule =
-//         DateTime(now.year, now.month, now.day, time.hour, time.minute);
-
-//     if (firstSchedule.isBefore(now)) {
-//       firstSchedule = firstSchedule.add(const Duration(days: 1));
-//     }
-
-//     const AndroidNotificationDetails androidDetails =
-//         AndroidNotificationDetails(
-//       'motivation_channel',
-//       'Motivation Alarm',
-//       channelDescription: 'Daily motivation for quitting smoking',
-//       importance: Importance.max,
-//       priority: Priority.high,
-//       playSound: true,
+//     final scheduledDate = DateTime(
+//       now.year,
+//       now.month,
+//       now.day,
+//       selectedTime.hour,
+//       selectedTime.minute,
 //     );
 
-//     const NotificationDetails platformDetails =
-//         NotificationDetails(android: androidDetails);
+//     final tzDate = tz.TZDateTime.from(
+//         scheduledDate.isBefore(now) ? scheduledDate.add(const Duration(days: 1)) : scheduledDate,
+//         tz.local);
+
+//     const androidDetails = AndroidNotificationDetails(
+//       'motivation_channel',
+//       '동기부여 알림',
+//       channelDescription: '매일 동기부여 알림 채널',
+//       importance: Importance.max,
+//       priority: Priority.high,
+//     );
+
+//     const notificationDetails = NotificationDetails(android: androidDetails);
 
 //     await flutterLocalNotificationsPlugin.zonedSchedule(
 //       0,
-//       '동기부여 알림',
-//       '오늘도 금연 화이팅! 🚭',
-//       firstSchedule.toLocal(),
-//       platformDetails,
+//       '매일 동기부여 알림',
+//       '오늘도 금연에 도움을 줄 수 있는 말을 해드릴게요!',
+//       tzDate,
+//       notificationDetails,
 //       androidAllowWhileIdle: true,
 //       uiLocalNotificationDateInterpretation:
 //           UILocalNotificationDateInterpretation.absoluteTime,
@@ -73,60 +75,59 @@
 //       crossAxisAlignment: CrossAxisAlignment.start,
 //       children: [
 //         const Padding(
-//           padding: EdgeInsets.only(left: 16.0),
+//           padding: EdgeInsets.only(left: 16.0, bottom: 8.0),
 //           child: Text(
-//             "알림",
-//             style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+//             "동기부여 알림",
+//             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
 //           ),
 //         ),
 //         SwitchListTile(
 //           title: const Text("금연 효과 달성 알림"),
-//           value: isSmokeEffectOn,
-//           onChanged: (val) {
-//             setState(() {
-//               isSmokeEffectOn = val;
-//             });
-//           },
-//         ),
-//         SwitchListTile(
-//           title: const Text("동기부여 알림"),
-//           subtitle: const Text("매일 금연에 도움을 줄 수 있는 말을 해드릴게요!"),
 //           value: isMotivationOn,
-//           onChanged: (val) {
-//             setState(() {
-//               isMotivationOn = val;
-//               if (isMotivationOn) _scheduleDailyAlarm(_motivationTime);
-//             });
+//           onChanged: (val) async {
+//             setState(() => isMotivationOn = val);
+//             if (val) {
+//               await _scheduleDailyNotification();
+//               ScaffoldMessenger.of(context).showSnackBar(
+//                 const SnackBar(content: Text("알림이 설정되었습니다.")),
+//               );
+//             } else {
+//               await flutterLocalNotificationsPlugin.cancel(0);
+//               ScaffoldMessenger.of(context).showSnackBar(
+//                 const SnackBar(content: Text("알림이 취소되었습니다.")),
+//               );
+//             }
 //           },
 //         ),
-//         if (isMotivationOn)
-//           Padding(
-//             padding: const EdgeInsets.only(left: 16.0, top: 8),
-//             child: Row(
-//               children: [
-//                 Text(
-//                   "알람 시간: ${_motivationTime.format(context)}",
-//                   style: const TextStyle(fontSize: 16),
-//                 ),
-//                 const SizedBox(width: 20),
-//                 ElevatedButton(
-//                   onPressed: () async {
-//                     final TimeOfDay? picked = await showTimePicker(
-//                       context: context,
-//                       initialTime: _motivationTime,
-//                     );
-//                     if (picked != null && picked != _motivationTime) {
-//                       setState(() {
-//                         _motivationTime = picked;
-//                         if (isMotivationOn) _scheduleDailyAlarm(_motivationTime);
-//                       });
+//         Padding(
+//           padding: const EdgeInsets.only(left: 16.0),
+//           child: Row(
+//             children: [
+//               Text("시간: ${selectedTime.format(context)}"),
+//               const SizedBox(width: 12),
+//               ElevatedButton(
+//                 onPressed: () async {
+//                   final picked = await showTimePicker(
+//                     context: context,
+//                     initialTime: selectedTime,
+//                   );
+//                   if (picked != null) {
+//                     setState(() => selectedTime = picked);
+//                     if (isMotivationOn) {
+//                       await _scheduleDailyNotification();
+//                       ScaffoldMessenger.of(context).showSnackBar(
+//                         SnackBar(
+//                             content: Text(
+//                                 "${selectedTime.format(context)}로 알림이 업데이트 되었습니다.")),
+//                       );
 //                     }
-//                   },
-//                   child: const Text("시간 설정"),
-//                 ),
-//               ],
-//             ),
+//                   }
+//                 },
+//                 child: const Text("시간 선택"),
+//               ),
+//             ],
 //           ),
+//         ),
 //       ],
 //     );
 //   }
