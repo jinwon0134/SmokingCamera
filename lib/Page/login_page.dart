@@ -3,9 +3,58 @@ import 'package:aa/Page/find_password_page.dart';
 import 'package:aa/Page/main_page.dart';
 import 'package:aa/Page/register_page.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController idController = TextEditingController();
+  final TextEditingController pwController = TextEditingController();
+
+  Future<void> login() async {
+    if (idController.text.isEmpty || pwController.text.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("아이디와 비밀번호를 입력해주세요")));
+      return;
+    }
+
+    final url = Uri.parse(
+      'http://localhost:8080/api/login',
+    ); // Spring Boot 로그인 API
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "email": idController.text,
+          "password": pwController.text,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // 로그인 성공 → MainPage 이동
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const MainPage()),
+        );
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("로그인 실패: ${response.body}")));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("서버 연결 실패: $e")));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +69,7 @@ class LoginPage extends StatelessWidget {
               width: 330,
               child: Column(
                 children: [
+                  // 아이디 입력
                   Container(
                     decoration: BoxDecoration(
                       border: Border.all(color: Color(0xFFBFBFBF)),
@@ -27,6 +77,7 @@ class LoginPage extends StatelessWidget {
                     ),
                     padding: EdgeInsets.symmetric(horizontal: 12),
                     child: TextField(
+                      controller: idController,
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: "아이디",
@@ -34,6 +85,7 @@ class LoginPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
+                  // 비밀번호 입력
                   Container(
                     width: 400,
                     height: 50,
@@ -43,6 +95,8 @@ class LoginPage extends StatelessWidget {
                     ),
                     padding: EdgeInsets.symmetric(horizontal: 12),
                     child: TextField(
+                      controller: pwController,
+                      obscureText: true,
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: "비밀번호",
@@ -50,6 +104,7 @@ class LoginPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 30),
+                  // 로그인 버튼
                   Container(
                     width: 400,
                     height: 50,
@@ -58,12 +113,7 @@ class LoginPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const MainPage()),
-                        );
-                      },
+                      onPressed: login, // 서버 연동 함수
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
                         foregroundColor: Colors.white,
@@ -80,6 +130,7 @@ class LoginPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
+            // 아이디/비밀번호 찾기 + 회원가입 링크
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -103,7 +154,7 @@ class LoginPage extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const FindPasswordPage(),
+                        builder: (_) => const FindIdPasswordPage(),
                       ),
                     );
                   },

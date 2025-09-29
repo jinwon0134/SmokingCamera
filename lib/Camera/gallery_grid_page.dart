@@ -80,6 +80,7 @@ class _GalleryGridPageState extends State<GalleryGridPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        scrolledUnderElevation: 0,
         iconTheme: const IconThemeData(
           color: Colors.white, // ← 아이콘(뒤로가기 등) 색상만 흰색
         ),
@@ -212,7 +213,11 @@ class _GalleryGridPageState extends State<GalleryGridPage> {
                     );
                   }
                 },
-                child: const Text("등록하기"),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+                child: const Text(
+                  "등록하기",
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             )
           : null,

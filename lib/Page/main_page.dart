@@ -4,6 +4,7 @@ import 'package:aa/Page/effect_page.dart';
 import 'package:aa/Page/login_page.dart';
 import 'package:aa/Page/map_page.dart';
 import 'package:aa/Page/mypage_page.dart';
+import 'package:aa/Page/setting_page.dart';
 import 'package:aa/Widget/case_example_slider.dart';
 import 'package:aa/Widget/showbanner_widget.dart';
 import 'package:flutter/material.dart';
@@ -95,6 +96,7 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        scrolledUnderElevation: 0,
         backgroundColor: Colors.white,
         elevation: 0,
         title: const Text('메인 페이지'),
@@ -106,7 +108,7 @@ class _MainPageState extends State<MainPage> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const LoginPage()),
+                MaterialPageRoute(builder: (_) => SettingPage()),
               );
             },
           ),

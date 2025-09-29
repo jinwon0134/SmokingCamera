@@ -1,3 +1,4 @@
+import 'package:aa/Page/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:aa/Page/login_page.dart';
 
@@ -14,7 +15,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'CleanZone',
       theme: ThemeData(scaffoldBackgroundColor: Colors.white),
-      home: const LoginPage(),
+      home: const MainPage(),
     );
   }
 }

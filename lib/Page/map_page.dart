@@ -85,7 +85,10 @@ class _MapPageState extends State<MapPage> {
     }
 
     Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high, // 기존 desiredAccuracy 대체
+        distanceFilter: 0,
+      ),
     );
 
     if (!mounted) return; // 위젯이 아직 화면에 있는지 체크
@@ -99,9 +102,10 @@ class _MapPageState extends State<MapPage> {
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
         ),
       );
-      _mapController?.animateCamera(
-        CameraUpdate.newLatLngZoom(_currentLocation!, 16),
-      );
+      //자동 현위치 설정 및 카메라 부드러움 효과, 배율단계 설정
+      // _mapController?.animateCamera(
+      //   CameraUpdate.newLatLngZoom(_currentLocation!, 16),
+      // );
     });
   }
 
@@ -184,7 +188,7 @@ class _MapPageState extends State<MapPage> {
           Expanded(
             child: GoogleMap(
               initialCameraPosition: const CameraPosition(
-                target: LatLng(36.335668, 127.460049),
+                target: LatLng(36.335868, 127.460049),
                 zoom: 16,
               ),
               markers: _markers,

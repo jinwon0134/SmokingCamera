@@ -74,11 +74,7 @@ class _CaseExampleSliderState extends State<CaseExampleSlider> {
                     padding: const EdgeInsets.only(left: 8.0),
                     child: Text(
                       widget.descriptions[index],
-                      style: const TextStyle(
-                        color: Color(0xFF8E8E8E),
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(color: Colors.black, fontSize: 14),
                     ),
                   ),
                 ],

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -8,8 +10,109 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController codeController = TextEditingController();
+  final TextEditingController pwController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController ageController = TextEditingController();
+
   bool agreePrivacy = false;
   bool agreeTerms = false;
+  bool isEmailVerified = false;
+  bool codeSent = false;
+
+  // 이메일 인증번호 전송
+  Future<void> sendEmailCode() async {
+    if (emailController.text.isEmpty) return;
+
+    final url = Uri.parse(
+      'http://<SERVER_IP>:8080/api/sendEmailCode',
+    ); // 서버 IP 변경
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"email": emailController.text}),
+    );
+
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("인증 코드가 이메일로 전송되었습니다.")));
+      setState(() => codeSent = true);
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("메일 전송 실패: ${response.body}")));
+    }
+  }
+
+  // 이메일 인증번호 확인
+  Future<void> verifyEmailCode() async {
+    if (codeController.text.isEmpty) return;
+
+    final url = Uri.parse(
+      'http://<SERVER_IP>:8080/api/verifyEmailCode',
+    ); // 서버 IP 변경
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "email": emailController.text,
+        "code": codeController.text,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("이메일 인증 완료!")));
+      setState(() => isEmailVerified = true);
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("인증 실패: ${response.body}")));
+      setState(() => isEmailVerified = false);
+    }
+  }
+
+  // 회원가입
+  Future<void> register() async {
+    if (!isEmailVerified) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("이메일 인증이 필요합니다.")));
+      return;
+    }
+    if (!agreePrivacy || !agreeTerms) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("약관에 모두 동의해야 합니다.")));
+      return;
+    }
+
+    final url = Uri.parse('http://<SERVER_IP>:8080/api/register'); // 서버 IP 변경
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "email": emailController.text,
+        "password": pwController.text,
+        "phone": phoneController.text,
+        "age": ageController.text,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("회원가입 완료! 로그인 해주세요.")));
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("회원가입 실패: ${response.body}")));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,141 +120,173 @@ class _RegisterPageState extends State<RegisterPage> {
       appBar: AppBar(
         title: Text('회원가입'),
         centerTitle: true,
-        shape: Border(bottom: BorderSide(color: Colors.black)),
         backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        shape: Border(bottom: BorderSide(color: Colors.black)),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(height: 40),
-            Container(
-              padding: const EdgeInsets.all(20),
-              width: 330,
-              child: Column(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Color(0xFFBFBFBF)),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 12),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        border: InputBorder.none, // 기본 테두리 제거
-                        hintText: "아이디 입력",
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            children: [
+              const SizedBox(height: 40),
+              Container(
+                padding: const EdgeInsets.all(20),
+                width: 330,
+                child: Column(
+                  children: [
+                    // 이메일
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Color(0xFFBFBFBF)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: TextField(
+                        controller: emailController,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: "이메일 입력",
+                        ),
+                        keyboardType: TextInputType.emailAddress,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Color(0xFFBFBFBF)),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 12),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        border: InputBorder.none, // 기본 테두리 제거
-                        hintText: "비밀번호 입력",
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Color(0xFFBFBFBF)),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 12),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        border: InputBorder.none, // 기본 테두리 제거
-                        hintText: "휴대전화번호 입력",
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    width: 400,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Color(0xFFBFBFBF)),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 12),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        border: InputBorder.none, // 기본 테두리 제거
-                        hintText: "나이 입력",
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // 첫 번째 체크박스와 텍스트 (개인정보 동의)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Checkbox(
-                        value: agreePrivacy,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            agreePrivacy = value ?? false;
-                          });
-                        },
-                        visualDensity: VisualDensity.compact, // 👈 세로/가로 간격 줄임
-                        materialTapTargetSize:
-                            MaterialTapTargetSize.shrinkWrap, // 👈 터치 영역 최소화
-                      ),
-                      Text("개인정보 수집에 동의합니다."),
-                    ],
-                  ),
+                    const SizedBox(height: 10),
 
-                  // 두 번째 체크박스
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Checkbox(
-                        value: agreeTerms,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            agreeTerms = value ?? false;
-                          });
-                        },
-                        visualDensity: VisualDensity.compact,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      Text("이용약관에 동의합니다."),
-                    ],
-                  ),
+                    // 인증번호 입력
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Color(0xFFBFBFBF)),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            child: TextField(
+                              controller: codeController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                hintText: "인증번호 입력",
+                              ),
+                              onSubmitted: (_) => verifyEmailCode(),
+                              onChanged: (value) {
+                                if (value.length == 6) verifyEmailCode();
+                              },
+                            ),
+                          ),
+                        ),
 
-                  const SizedBox(height: 40),
-
-                  Container(
-                    width: 400,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black), // ✅ 테두리 추가
-                      borderRadius: BorderRadius.circular(10),
+                        const SizedBox(width: 10),
+                        ElevatedButton(
+                          onPressed: sendEmailCode,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                          ),
+                          child: Text(
+                            codeSent ? "재전송" : "인증번호 전송",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
                     ),
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        foregroundColor: Colors.white,
-                        elevation: 0, // 그림자 제거 (선택)
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    const SizedBox(height: 10),
+
+                    // 비밀번호
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Color(0xFFBFBFBF)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: TextField(
+                        controller: pwController,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: "비밀번호 입력",
                         ),
                       ),
-                      child: Text('회원가입 완료'),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
+                    const SizedBox(height: 10),
+
+                    // 전화번호
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Color(0xFFBFBFBF)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: TextField(
+                        controller: phoneController,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: "휴대전화번호 입력",
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // 나이
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Color(0xFFBFBFBF)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: TextField(
+                        controller: ageController,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: "나이 입력",
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                    // 체크박스
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: agreePrivacy,
+                          onChanged: (val) {
+                            setState(() => agreePrivacy = val ?? false);
+                          },
+                        ),
+                        Text("개인정보 수집에 동의합니다."),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: agreeTerms,
+                          onChanged: (val) {
+                            setState(() => agreeTerms = val ?? false);
+                          },
+                        ),
+                        Text("이용약관에 동의합니다."),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    // 회원가입 버튼
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: register,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: Text("회원가입 완료"),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
