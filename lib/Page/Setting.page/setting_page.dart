@@ -202,7 +202,7 @@ class _SettingPageState extends State<SettingPage> {
               borderRadius: BorderRadius.circular(20),
             ),
             padding: const EdgeInsets.all(20),
-            height: 250,
+            height: 300,
             width: 350,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -219,6 +219,7 @@ class _SettingPageState extends State<SettingPage> {
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 18),
                 ),
+                SizedBox(height: 15),
 
                 Column(
                   children: [
@@ -240,6 +241,7 @@ class _SettingPageState extends State<SettingPage> {
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                     ),
+                    SizedBox(height: 15),
                     ElevatedButton(
                       onPressed: () => Navigator.of(context).pop(),
                       style: ElevatedButton.styleFrom(
